@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tab Recorder</title>
+    <style>
+        body {
+            width: 300px;
+            min-height: 200px;
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header p {
+            margin: 5px 0 0 0;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-record {
+            background: #ff4757;
+            color: white;
+        }
+
+        .btn-record:hover {
+            background: #ff3742;
+            transform: translateY(-1px);
+        }
+
+        .btn-record.recording {
+            background: #2ed573;
+            animation: pulse 2s infinite;
+        }
+
+        .btn-stop {
+            background: #3742fa;
+            color: white;
+        }
+
+        .btn-stop:hover {
+            background: #2f3542;
+        }
+
+        .btn-export {
+            background: #ffa502;
+            color: white;
+        }
+
+        .btn-export:hover {
+            background: #ff9500;
+        }
+
+        .btn-clear {
+            background: #747d8c;
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background: #57606f;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .status.recording {
+            background: rgba(46, 213, 115, 0.2);
+            border: 1px solid rgba(46, 213, 115, 0.3);
+        }
+
+        .status.idle {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .status.has-data {
+            background: rgba(255, 165, 2, 0.2);
+            border: 1px solid rgba(255, 165, 2, 0.3);
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(46, 213, 115, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(46, 213, 115, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(46, 213, 115, 0); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .button-group .btn {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Tab Recorder</h1>
+            <p>Record console logs for defect reproduction</p>
+        </div>
+
+        <div class="controls">
+            <button id="recordBtn" class="btn btn-record">Start Recording</button>
+            <button id="stopBtn" class="btn btn-stop hidden">Stop Recording</button>
+            
+            <div class="button-group">
+                <button id="exportBtn" class="btn btn-export hidden">Export Data</button>
+                <button id="clearBtn" class="btn btn-clear hidden">Clear Data</button>
+            </div>
+        </div>
+
+        <div id="status" class="status idle">
+            Ready to record console logs
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html> 
