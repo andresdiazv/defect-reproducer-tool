@@ -1,6 +1,7 @@
 // Background service worker for Tab Recorder extension
 
 let recordingTabs = new Set();
+let consoleLogs = []; // Store logs in memory for better performance
 
 chrome.runtime.onInstalled.addListener(function() {
     // Initialize storage
@@ -12,6 +13,7 @@ chrome.runtime.onInstalled.addListener(function() {
 
 // Handle messages from popup and content scripts
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+    console.log('Background: Received message:', request.action, request);
 
     switch (request.action) {
         case 'recordingStarted':
@@ -23,11 +25,22 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             break;
             
         case 'consoleLog':
+            console.log('Background: Processing consoleLog message');
             handleConsoleLog(request.log);
             break;
             
         case 'getRecordingStatus':
             sendResponse({ isRecording: recordingTabs.has(request.tabId) });
+            break;
+            
+        case 'getLogs':
+            sendResponse({ logs: consoleLogs });
+            break;
+            
+        case 'clearLogs':
+            consoleLogs = [];
+            chrome.storage.local.set({ consoleLogs: [] });
+            sendResponse({ status: 'cleared' });
             break;
     }
 });
@@ -36,6 +49,7 @@ function handleRecordingStarted(tabId, url) {
     recordingTabs.add(tabId);
     
     // Clear previous logs for this session
+    consoleLogs = [];
     chrome.storage.local.set({
         isRecording: true,
         consoleLogs: []
@@ -66,16 +80,20 @@ function handleRecordingStopped(tabId) {
 }
 
 function handleConsoleLog(log) {
-    chrome.storage.local.get(['consoleLogs'], function(result) {
-        const logs = result.consoleLogs || [];
-        logs.push(log);
-        
-        // Keep only last 1000 logs to prevent storage overflow
-        if (logs.length > 1000) {
-            logs.splice(0, logs.length - 1000);
-        }
-        
-        chrome.storage.local.set({ consoleLogs: logs });
+    console.log('Background: Received console log:', log);
+    
+    // Add to memory array
+    consoleLogs.push(log);
+    console.log('Background: Added log, new count:', consoleLogs.length);
+    
+    // Keep only last 1000 logs to prevent memory overflow
+    if (consoleLogs.length > 1000) {
+        consoleLogs.splice(0, consoleLogs.length - 1000);
+    }
+    
+    // Also store in chrome.storage.local for persistence
+    chrome.storage.local.set({ consoleLogs: consoleLogs }, function() {
+        console.log('Background: Stored logs successfully, total:', consoleLogs.length);
     });
 }
 

@@ -149,8 +149,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 chrome.storage.local.set({isRecording: false});
                 
                 // Check if we have recorded data
-                chrome.storage.local.get(['consoleLogs'], function(result) {
-                    hasRecordedData = (result.consoleLogs && result.consoleLogs.length > 0) || false;
+                chrome.runtime.sendMessage({ action: 'getLogs' }, function(response) {
+                    hasRecordedData = (response.logs && response.logs.length > 0) || false;
                     updateUI();
                 });
                 
@@ -164,8 +164,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function exportData() {
-        chrome.storage.local.get(['consoleLogs'], function(result) {
-            const logs = result.consoleLogs || [];
+        // Get logs from background script instead of storage
+        chrome.runtime.sendMessage({ action: 'getLogs' }, function(response) {
+            const logs = response.logs || [];
+            
+            console.log('Export: Retrieved logs from background:', logs.length);
+            console.log('Export: Log levels found:', [...new Set(logs.map(log => log.level))]);
             
             if (logs.length === 0) {
                 status.textContent = 'No data to export';
@@ -177,6 +181,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 url: window.location.href,
                 consoleLogs: logs
             };
+
+            console.log('Export: Final data to export:', data);
 
             const blob = new Blob([JSON.stringify(data, null, 2)], {
                 type: 'application/json'
@@ -199,7 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function clearData() {
-        chrome.storage.local.remove(['consoleLogs'], function() {
+        chrome.runtime.sendMessage({ action: 'clearLogs' }, function(response) {
             hasRecordedData = false;
             updateUI();
             status.textContent = 'Data cleared successfully!';

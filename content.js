@@ -29,6 +29,9 @@ if (window.tabRecorderInitialized) {
     window.addEventListener('message', (event) => {
         if (event.source !== window) return;
         if (event.data && event.data.source === 'tab-recorder') {
+            // Temporary debugging to see what's happening
+            console.log('Tab Recorder: Received message with level:', event.data.level, 'isRecording:', isRecording);
+            
             if (isRecording) {
                 const logEntry = {
                     timestamp: new Date().toISOString(),
@@ -37,7 +40,10 @@ if (window.tabRecorderInitialized) {
                     url: window.location.href,
                     userAgent: navigator.userAgent
                 };
+                console.log('Tab Recorder: Forwarding log to background:', logEntry);
                 sendLogToBackground(logEntry);
+            } else {
+                console.log('Tab Recorder: Not recording, ignoring log');
             }
         }
     });
