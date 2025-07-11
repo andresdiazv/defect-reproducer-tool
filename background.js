@@ -3,7 +3,6 @@
 let recordingTabs = new Set();
 
 chrome.runtime.onInstalled.addListener(function() {
-    console.log('Tab Recorder extension installed');
     // Initialize storage
     chrome.storage.local.set({
         isRecording: false,
@@ -13,7 +12,6 @@ chrome.runtime.onInstalled.addListener(function() {
 
 // Handle messages from popup and content scripts
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    console.log('Background received message:', request);
 
     switch (request.action) {
         case 'recordingStarted':
@@ -36,7 +34,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
 function handleRecordingStarted(tabId, url) {
     recordingTabs.add(tabId);
-    console.log(`Recording started for tab ${tabId} at ${url}`);
     
     // Clear previous logs for this session
     chrome.storage.local.set({
@@ -58,7 +55,6 @@ function handleRecordingStarted(tabId, url) {
 
 function handleRecordingStopped(tabId) {
     recordingTabs.delete(tabId);
-    console.log(`Recording stopped for tab ${tabId}`);
     
     chrome.storage.local.set({ isRecording: false });
     
@@ -100,12 +96,10 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 chrome.tabs.onRemoved.addListener(function(tabId) {
     if (recordingTabs.has(tabId)) {
         recordingTabs.delete(tabId);
-        console.log(`Tab ${tabId} closed, recording stopped`);
     }
 });
 
 // Handle extension icon click
 chrome.action.onClicked.addListener(function(tab) {
     // This will be handled by the popup, but we can add quick actions here later
-    console.log('Extension icon clicked for tab:', tab.id);
 }); 

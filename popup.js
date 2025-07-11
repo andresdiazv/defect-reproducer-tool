@@ -41,45 +41,88 @@ document.addEventListener('DOMContentLoaded', function() {
         chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
             const activeTab = tabs[0];
             
-            // First, ensure content script is injected
-            chrome.scripting.executeScript({
-                target: { tabId: activeTab.id },
-                files: ['content.js']
-            }).then(() => {
-                console.log('Content script injected successfully');
-                
-                // Wait a moment for script to initialize
-                setTimeout(() => {
-                    chrome.tabs.sendMessage(activeTab.id, {
-                        action: 'startRecording'
-                    }, function(response) {
-                        if (chrome.runtime.lastError) {
-                            console.error('Error starting recording:', chrome.runtime.lastError);
-                            status.textContent = 'Error: Could not start recording. Please refresh the page and try again.';
-                            return;
-                        }
-
-                        if (response && response.success) {
-                            isRecording = true;
-                            hasRecordedData = false; // Reset for new recording
-                            chrome.storage.local.set({isRecording: true});
-                            updateUI();
-                            
-                            // Send message to background script to track recording
-                            chrome.runtime.sendMessage({
-                                action: 'recordingStarted',
-                                tabId: activeTab.id,
-                                url: activeTab.url
-                            });
-                        } else {
-                            status.textContent = 'Error: Recording failed to start';
-                        }
-                    });
-                }, 100);
-            }).catch((error) => {
-                console.error('Error injecting content script:', error);
-                status.textContent = 'Error: Could not inject content script. Please refresh the page.';
+            // First, check if content script is already loaded
+            chrome.tabs.sendMessage(activeTab.id, {
+                action: 'getStatus'
+            }, function(response) {
+                if (chrome.runtime.lastError) {
+                    // Content script not loaded, inject it
+                    injectContentScript(activeTab.id, activeTab.url);
+                } else {
+                    // Content script is loaded, start recording directly
+                    startRecordingDirect(activeTab.id, activeTab.url);
+                }
             });
+        });
+    }
+
+    function injectContentScript(tabId, url) {
+        chrome.scripting.executeScript({
+            target: { tabId: tabId },
+            files: ['content.js']
+        }).then(() => {
+            console.log('Content script injected successfully');
+            
+            // Poll for content script readiness
+            pollForContentScriptReady(tabId, url);
+        }).catch((error) => {
+            console.error('Error injecting content script:', error);
+            status.textContent = 'Error: Could not inject content script. Please refresh the page.';
+        });
+    }
+
+    function pollForContentScriptReady(tabId, url, attempts = 0) {
+        const maxAttempts = 10; // Try for up to 1 second (10 * 100ms)
+        
+        console.log(`Tab Recorder: Polling for content script readiness (attempt ${attempts + 1}/${maxAttempts})`);
+        
+        chrome.tabs.sendMessage(tabId, {
+            action: 'getStatus'
+        }, function(response) {
+            if (chrome.runtime.lastError) {
+                console.log('Tab Recorder: Content script not ready yet, retrying...');
+                if (attempts < maxAttempts) {
+                    // Try again after 100ms
+                    setTimeout(() => {
+                        pollForContentScriptReady(tabId, url, attempts + 1);
+                    }, 100);
+                } else {
+                    console.error('Content script not ready after maximum attempts');
+                    status.textContent = 'Error: Content script not ready. Please refresh the page.';
+                }
+            } else {
+                console.log('Tab Recorder: Content script is ready, starting recording');
+                // Content script is ready, start recording
+                startRecordingDirect(tabId, url);
+            }
+        });
+    }
+
+    function startRecordingDirect(tabId, url) {
+        chrome.tabs.sendMessage(tabId, {
+            action: 'startRecording'
+        }, function(response) {
+            if (chrome.runtime.lastError) {
+                console.error('Error starting recording:', chrome.runtime.lastError);
+                status.textContent = 'Error: Could not start recording. Please refresh the page and try again.';
+                return;
+            }
+
+            if (response && response.success) {
+                isRecording = true;
+                hasRecordedData = false; // Reset for new recording
+                chrome.storage.local.set({isRecording: true});
+                updateUI();
+                
+                // Send message to background script to track recording
+                chrome.runtime.sendMessage({
+                    action: 'recordingStarted',
+                    tabId: tabId,
+                    url: url
+                });
+            } else {
+                status.textContent = 'Error: Recording failed to start';
+            }
         });
     }
 
