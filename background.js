@@ -2,13 +2,15 @@
 
 let recordingTabs = new Set();
 let consoleLogs = []; // Store logs in memory for better performance
+let networkLogs = []; // Store network logs in memory
 
 // Runs when the extension is first installed
 chrome.runtime.onInstalled.addListener(function() {
     // Initialize storage
     chrome.storage.local.set({
         isRecording: false,
-        consoleLogs: []
+        consoleLogs: [],
+        networkLogs: []
     });
 });
 
@@ -31,17 +33,23 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             handleConsoleLog(request.log);
             break;
             
+        case 'networkLog':
+            console.log('Background: Processing networkLog message');
+            handleNetworkLog(request.log);
+            break;
+            
         case 'getRecordingStatus':
             sendResponse({ isRecording: recordingTabs.has(request.tabId) });
             break;
             
         case 'getLogs':
-            sendResponse({ logs: consoleLogs });
+            sendResponse({ consoleLogs: consoleLogs, networkLogs: networkLogs });
             break;
             
         case 'clearLogs':
             consoleLogs = [];
-            chrome.storage.local.set({ consoleLogs: [] });
+            networkLogs = [];
+            chrome.storage.local.set({ consoleLogs: [], networkLogs: [] });
             sendResponse({ status: 'cleared' });
             break;
     }
@@ -54,9 +62,11 @@ function handleRecordingStarted(tabId, url) {
     
     // Clear previous logs for this session
     consoleLogs = [];
+    networkLogs = [];
     chrome.storage.local.set({
         isRecording: true,
-        consoleLogs: []
+        consoleLogs: [],
+        networkLogs: []
     });
     
     // Update badge to show recording status
@@ -92,7 +102,7 @@ function handleConsoleLog(log) {
     
     // Add to memory array
     consoleLogs.push(log);
-    console.log('Background: Added log, new count:', consoleLogs.length);
+    console.log('Background: Added console log, new count:', consoleLogs.length);
     
     // Keep only last 1000 logs to prevent memory overflow
     if (consoleLogs.length > 1000) {
@@ -101,7 +111,27 @@ function handleConsoleLog(log) {
     
     // Also store in chrome.storage.local for persistence
     chrome.storage.local.set({ consoleLogs: consoleLogs }, function() {
-        console.log('Background: Stored logs successfully, total:', consoleLogs.length);
+        console.log('Background: Stored console logs successfully, total:', consoleLogs.length);
+    });
+}
+
+// Stores a network log entry in memory and persistent storage
+// This is called every time a fetch or XMLHttpRequest happens on the page
+function handleNetworkLog(log) {
+    console.log('Background: Received network log:', log);
+    
+    // Add to memory array
+    networkLogs.push(log);
+    console.log('Background: Added network log, new count:', networkLogs.length);
+    
+    // Keep only last 500 network logs to prevent memory overflow
+    if (networkLogs.length > 500) {
+        networkLogs.splice(0, networkLogs.length - 500);
+    }
+    
+    // Also store in chrome.storage.local for persistence
+    chrome.storage.local.set({ networkLogs: networkLogs }, function() {
+        console.log('Background: Stored network logs successfully, total:', networkLogs.length);
     });
 }
 

@@ -5,164 +5,234 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tab Recorder</title>
     <style>
+        :root {
+            --dark-bg: #131A22;
+            --card-bg: #1a222c;
+            --header-bg: #161d27;
+            --footer-bg: #161d27;
+            --gray-text: #e0e6ed;
+            --white: #fff;
+            --black: #131A22;
+            --muted-blue: #22304a;
+            --border-radius: 4px;
+        }
+        html, body {
+            width: 320px;
+            min-height: 400px;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, 'Segoe UI', Arial, sans-serif;
+            background: var(--dark-bg);
+            color: var(--gray-text);
+        }
         body {
-            width: 300px;
-            min-height: 200px;
-            margin: 0;
-            padding: 20px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .container {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            min-height: 400px;
         }
-
         .header {
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 18px;
+            background: var(--header-bg);
+            color: var(--white);
+            padding: 14px 18px 10px 18px;
+            border-bottom: 1px solid #232f3e;
             font-weight: 600;
+            font-size: 17px;
+            letter-spacing: 0.2px;
+            border-top-left-radius: var(--border-radius);
+            border-top-right-radius: var(--border-radius);
         }
-
-        .header p {
-            margin: 5px 0 0 0;
-            font-size: 12px;
-            opacity: 0.8;
-        }
-
-        .controls {
+        .content {
+            flex: 1 1 auto;
+            padding: 18px 18px 0 18px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            justify-content: flex-start;
         }
-
-        .btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
+        .content.idle {
+            padding-bottom: 0;
+        }
+        .status-container {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 10px 0 10px 0;
+            margin-bottom: 16px;
+            text-align: center;
+            box-shadow: 0 1px 4px rgba(33,33,33,0.08);
+        }
+        .status {
             font-size: 14px;
             font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            color: var(--white);
+            background: none;
+            border-radius: var(--border-radius);
+            display: inline-block;
         }
-
-        .btn-record {
-            background: #ff4757;
-            color: white;
-        }
-
-        .btn-record:hover {
-            background: #ff3742;
-            transform: translateY(-1px);
-        }
-
-        .btn-record.recording {
-            background: #2ed573;
-            animation: pulse 2s infinite;
-        }
-
-        .btn-stop {
-            background: #3742fa;
-            color: white;
-        }
-
-        .btn-stop:hover {
-            background: #2f3542;
-        }
-
-        .btn-export {
-            background: #ffa502;
-            color: white;
-        }
-
-        .btn-export:hover {
-            background: #ff9500;
-        }
-
-        .btn-clear {
-            background: #747d8c;
-            color: white;
-        }
-
-        .btn-clear:hover {
-            background: #57606f;
-        }
-
-        .status {
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 12px;
-            text-align: center;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-        }
-
-        .status.recording {
-            background: rgba(46, 213, 115, 0.2);
-            border: 1px solid rgba(46, 213, 115, 0.3);
-        }
-
         .status.idle {
-            background: rgba(255, 255, 255, 0.1);
+            color: #b0b8c1;
         }
-
+        .status.recording {
+            color: var(--white);
+            background: #22304a;
+        }
         .status.has-data {
-            background: rgba(255, 165, 2, 0.2);
-            border: 1px solid rgba(255, 165, 2, 0.3);
+            color: var(--white);
+            background: #22304a;
         }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(46, 213, 115, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(46, 213, 115, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(46, 213, 115, 0); }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 12px;
+            color: #b0b8c1;
         }
-
+        .stat {
+            background: var(--card-bg);
+            padding: 6px 10px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 1px 4px rgba(33,33,33,0.08);
+            border: 1px solid #232f3e;
+            min-width: 80px;
+            text-align: center;
+        }
+        .stat-label {
+            font-weight: 500;
+            color: #b0b8c1;
+            font-size: 12px;
+        }
+        .stat-value {
+            color: var(--white);
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .btn {
+            padding: 11px 0;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            text-align: center;
+            transition: background 0.15s, color 0.15s;
+            letter-spacing: 0.1px;
+        }
+        .btn-primary {
+            background: var(--muted-blue);
+            color: var(--white);
+        }
+        .btn-primary:hover {
+            background: #1a2533;
+        }
+        .btn-danger {
+            background: #22304a;
+            color: var(--white);
+            border: 1px solid #232f3e;
+        }
+        .btn-danger:hover {
+            background: #2d3a4d;
+        }
+        .btn-success {
+            background: var(--white);
+            color: var(--black);
+        }
+        .btn-success:hover {
+            background: #e0e6ed;
+        }
+        .btn-warning {
+            background: #f5c542;
+            color: var(--black);
+            border: 1px solid #f5c542;
+        }
+        .btn-warning:hover {
+            background: #ffe082;
+        }
         .hidden {
             display: none;
         }
-
-        .button-group {
-            display: flex;
-            gap: 10px;
+        .icon {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+            margin-right: 6px;
         }
-
-        .button-group .btn {
-            flex: 1;
+        .footer {
+            padding: 12px 18px;
+            background: var(--footer-bg);
+            border-top: 1px solid #232f3e;
+            text-align: center;
+            font-size: 12px;
+            color: #b0b8c1;
+            border-bottom-left-radius: var(--border-radius);
+            border-bottom-right-radius: var(--border-radius);
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Tab Recorder</h1>
-            <p>Record console logs for defect reproduction</p>
+    <div class="header">
+        Tab Recorder
+    </div>
+    <div class="content idle" id="mainContent">
+        <div class="status-container">
+            <div id="status" class="status idle">Ready to record</div>
         </div>
-
-        <div class="controls">
-            <button id="recordBtn" class="btn btn-record">Start Recording</button>
-            <button id="stopBtn" class="btn btn-stop hidden">Stop Recording</button>
-            
-            <div class="button-group">
-                <button id="exportBtn" class="btn btn-export hidden">Export Data</button>
-                <button id="clearBtn" class="btn btn-clear hidden">Clear Data</button>
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-label">Console Logs</div>
+                <div id="consoleCount" class="stat-value">0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Network Calls</div>
+                <div id="networkCount" class="stat-value">0</div>
             </div>
         </div>
-
-        <div id="status" class="status idle">
-            Ready to record console logs
+        <div class="button-group">
+            <button id="recordBtn" class="btn btn-primary">
+                <span>Start Recording</span>
+            </button>
+            <button id="stopBtn" class="btn btn-danger hidden">
+                <span>Stop Recording</span>
+            </button>
+            <button id="exportBtn" class="btn btn-success hidden">
+                <span>Export Data</span>
+            </button>
+            <button id="clearBtn" class="btn btn-warning hidden">
+                <span>Clear Data</span>
+            </button>
         </div>
     </div>
-
+    <div class="footer">
+        Defect Reproduction Tool &mdash; Console & Network Monitoring
+    </div>
     <script src="popup.js"></script>
+    <script>
+    // Adjust content padding based on state
+    function updateContentPadding(state) {
+        var content = document.getElementById('mainContent');
+        if (content) {
+            if (state === 'idle') {
+                content.classList.add('idle');
+            } else {
+                content.classList.remove('idle');
+            }
+        }
+    }
+    // Listen for status changes from popup.js
+    const origUpdateUI = window.updateUI;
+    window.updateUI = function() {
+        if (typeof origUpdateUI === 'function') origUpdateUI();
+        var status = document.getElementById('status');
+        if (status && status.classList.contains('idle')) {
+            updateContentPadding('idle');
+        } else {
+            updateContentPadding('other');
+        }
+    };
+    </script>
 </body>
 </html> 

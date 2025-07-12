@@ -25,21 +25,40 @@ if (window.tabRecorderInitialized) {
         }
     }
 
-    // Listens for messages from the injected script (console overrides)
-    // When a console.log/error/warn/etc happens on the page, the injected script
-    // sends a message here, and we forward it to the background script
+    // Listen for messages from the injected script
     window.addEventListener('message', (event) => {
         if (event.source !== window) return;
         if (event.data && event.data.source === 'tab-recorder') {
             if (isRecording) {
-                const logEntry = {
-                    timestamp: new Date().toISOString(),
-                    level: event.data.level,
-                    message: event.data.message,
-                    url: window.location.href,
-                    userAgent: navigator.userAgent
-                };
-                sendLogToBackground(logEntry);
+                if (event.data.type === 'networkLog') {
+                    // Handle network logs
+                    const networkEntry = {
+                        timestamp: new Date().toISOString(),
+                        type: 'network',
+                        transport: event.data.transport,
+                        method: event.data.method,
+                        url: event.data.url,
+                        status: event.data.status,
+                        requestTime: event.data.requestTime,
+                        responseTime: event.data.responseTime,
+                        responseBody: event.data.responseBody,
+                        headers: event.data.headers,
+                        pageUrl: window.location.href,
+                        userAgent: navigator.userAgent
+                    };
+                    sendLogToBackground(networkEntry);
+                } else {
+                    // Handle console logs
+                    const logEntry = {
+                        timestamp: new Date().toISOString(),
+                        type: 'console',
+                        level: event.data.level,
+                        message: event.data.message,
+                        url: window.location.href,
+                        userAgent: navigator.userAgent
+                    };
+                    sendLogToBackground(logEntry);
+                }
             }
         }
     });

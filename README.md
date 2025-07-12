@@ -1,12 +1,15 @@
 # Tab Recorder - Defect Reproduction Tool
 
-A Chrome extension for recording tab actions to help with defect reproduction, starting with comprehensive console logging.
+A Chrome extension for recording tab actions to help with defect reproduction, starting with comprehensive console logging and network request monitoring.
 
 ## Features
 
 - **Console Log Recording**: Captures all console methods (`log`, `error`, `warn`, `info`, `debug`)
+- **Network Request Recording**: Captures fetch and XMLHttpRequest calls with full request/response data
 - **Real-time Recording**: Start/stop recording with a single click
 - **Export Functionality**: Export captured logs as JSON with timestamps and metadata
+- **Cross-tab Support**: Works on any webpage
+- **Reliable Performance**: No race conditions or timing issues
 
 ## Installation
 
@@ -19,9 +22,9 @@ A Chrome extension for recording tab actions to help with defect reproduction, s
 ## Usage
 
 1. **Start Recording**: Click the extension icon and press "Start Recording"
-2. **Interact with the page**: Navigate, click buttons, trigger console logs
+2. **Interact with the page**: Navigate, click buttons, trigger console logs and network requests
 3. **Stop Recording**: Click "Stop Recording" when done
-4. **Export Data**: Click "Export Data" to download a JSON file with all captured logs
+4. **Export Data**: Click "Export Data" to download a JSON file with all captured logs and network requests
 
 ## Current Status (07/11/2025)
 
@@ -46,32 +49,29 @@ A Chrome extension for recording tab actions to help with defect reproduction, s
 ✅ `console.warn()` messages  
 ✅ `console.info()` messages  
 ✅ `console.debug()` messages  
+✅ `fetch()` requests (GET, POST, PUT, DELETE, etc.)  
+✅ `XMLHttpRequest` calls  
+✅ Network request headers and response bodies  
 ✅ Proper timestamps and metadata  
 ✅ Works on first click (no more double-click needed)
 
-## Demo
+## Technical Details
 
-This is a picture of how the extension looks when opened on my testing page used for simulating errors and debugging.  
-<img width="1000" alt="Extension on test page" src="https://github.com/user-attachments/assets/6bc23866-9710-4112-b84f-e5afb179888a" />
-
-This is a picture of when the extension is ready to record.  
-<img width="300" alt="Ready to record" src="https://github.com/user-attachments/assets/409750d5-149f-4f7c-b77a-22b50f402797" />
-
-This is a picture of when the extension is in the recording phase.  
-<img width="300" alt="Recording in progress" src="https://github.com/user-attachments/assets/08db60e1-895b-4c3c-9afd-2992d39c68e1" />
-
-This is the exported JSON file opened in Notepad.  
-<img width="700" alt="Exported JSON" src="https://github.com/user-attachments/assets/74228884-52bb-4e6f-bfcd-253c31a7df57" />
+- **Manifest Version**: 3
+- **Content Scripts**: Isolated world injection for console and network override
+- **Background Service Worker**: Handles log storage and management
+- **Storage**: In-memory array with Chrome storage persistence
+- **Network Interception**: Overrides fetch and XMLHttpRequest to capture all requests
 
 ## File Structure
 
 ```
-├── manifest.json         # Extension configuration
+├── manifest.json          # Extension configuration
 ├── popup.html            # Extension popup UI
 ├── popup.js              # Popup logic and export functionality
-├── content.js            # Content script for console interception
+├── content.js            # Content script for console and network interception
 ├── background.js         # Background service worker
-├── injected.js           # Console override script (injected into page)
+├── injected.js           # Console and network override script (injected into page)
 ├── test-console.html     # Test page for development
 └── icons/                # Extension icons
 ```
@@ -82,15 +82,15 @@ To test the extension:
 1. Load the extension in Chrome
 2. Open `test-console.html` in a new tab
 3. Start recording and click the test buttons
-4. Export the data to verify all console levels are captured
+4. Export the data to verify all console levels and network requests are captured
 
 ## Future Enhancements
 
-- Network request recording
-- User interaction tracking
+- User interaction tracking (clicks, form submissions)
 - Screenshot capture
 - Performance monitoring
 - Multiple export formats (HAR, ZIP)
+- Real-time streaming to external tools
 
 ## License
 

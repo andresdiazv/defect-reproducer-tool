@@ -1,6 +1,7 @@
 // Injected script for Tab Recorder - console override logic
 // This script runs in the page context, not the content script context
 // It overrides the console methods to capture all console.log/error/warn/etc calls
+// It also overrides fetch and XMLHttpRequest to capture network requests
 
 (function() {
     'use strict';
@@ -71,6 +72,82 @@
         sendLog('debug', args);
     };
 
+    // Override fetch to capture network requests
+    const originalFetch = window.fetch;
+    window.fetch = async function(...args) {
+        const [url, config] = args;
+        const method = (config?.method || 'GET').toUpperCase();
+        const requestTime = new Date().toISOString();
+
+        try {
+            const response = await originalFetch(...args);
+            const clone = response.clone();
+
+            clone.text().then(body => {
+                window.postMessage({
+                    source: 'tab-recorder',
+                    type: 'networkLog',
+                    transport: 'fetch',
+                    method,
+                    url,
+                    status: response.status,
+                    requestTime,
+                    responseTime: new Date().toISOString(),
+                    responseBody: body,
+                    headers: Object.fromEntries(response.headers.entries())
+                }, '*');
+            });
+
+            return response;
+        } catch (error) {
+            window.postMessage({
+                source: 'tab-recorder',
+                type: 'networkLog',
+                transport: 'fetch',
+                method,
+                url,
+                status: 'error',
+                requestTime,
+                responseTime: new Date().toISOString(),
+                responseBody: error.message
+            }, '*');
+            throw error;
+        }
+    };
+
+    // Override XMLHttpRequest to capture network requests
+    const originalOpen = XMLHttpRequest.prototype.open;
+    const originalSend = XMLHttpRequest.prototype.send;
+
+    XMLHttpRequest.prototype.open = function(method, url) {
+        this._method = method;
+        this._url = url;
+        return originalOpen.apply(this, arguments);
+    };
+
+    XMLHttpRequest.prototype.send = function(body) {
+        const start = Date.now();
+        const xhr = this;
+
+        xhr.addEventListener('loadend', function() {
+            window.postMessage({
+                source: 'tab-recorder',
+                type: 'networkLog',
+                transport: 'xhr',
+                method: xhr._method,
+                url: xhr._url,
+                status: xhr.status,
+                requestTime: new Date(start).toISOString(),
+                responseTime: new Date().toISOString(),
+                responseBody: xhr.responseText,
+                headers: xhr.getAllResponseHeaders()
+            }, '*');
+        });
+
+        return originalSend.apply(this, arguments);
+    };
+
     // Log that injection was successful
     console.log('Tab Recorder: Console override injected successfully');
+    console.log('Tab Recorder: Network interception (fetch & XHR) initialized');
 })(); 
