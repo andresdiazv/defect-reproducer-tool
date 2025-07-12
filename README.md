@@ -1,154 +1,92 @@
 # Tab Recorder - Defect Reproduction Tool
 
-A Chrome extension designed to record tab actions for defect reproduction, starting with console logging capabilities.
+A Chrome extension for recording tab actions to help with defect reproduction, starting with comprehensive console logging.
 
 ## Features
 
-### Current Features
-- **Console Log Recording**: Captures all console.log, console.error, console.warn, console.info, and console.debug calls
-- **Timestamp Tracking**: Each log entry includes precise timestamps
-- **Data Export**: Export recorded data as JSON files
-- **Visual Feedback**: Extension badge shows recording status
-- **Modern UI**: Clean, intuitive popup interface
-
-### Planned Features
-- Mouse click recording
-- Keyboard input recording
-- Network request recording
-- Screenshot capture
-- Video recording
+- **Console Log Recording**: Captures all console methods (`log`, `error`, `warn`, `info`, `debug`)
+- **Real-time Recording**: Start/stop recording with a single click
+- **Export Functionality**: Export captured logs as JSON with timestamps and metadata
+- **Cross-tab Support**: Works on any webpage
+- **Reliable Performance**: No race conditions or timing issues
 
 ## Installation
 
-### Development Installation
-
-1. **Clone or download this repository**
-   ```bash
-   git clone <repository-url>
-   cd defect-reproducer-tool
-   ```
-
-2. **Load the extension in Chrome**
-   - Open Chrome and navigate to `chrome://extensions/`
-   - Enable "Developer mode" (toggle in top right)
-   - Click "Load unpacked"
-   - Select the folder containing this extension
-
-3. **Verify installation**
-   - The extension should appear in your extensions list
-   - You should see the Tab Recorder icon in your Chrome toolbar
+1. Clone this repository
+2. Open Chrome and go to `chrome://extensions/`
+3. Enable "Developer mode"
+4. Click "Load unpacked" and select the extension folder
+5. The extension icon will appear in your toolbar
 
 ## Usage
 
-### Basic Console Recording
+1. **Start Recording**: Click the extension icon and press "Start Recording"
+2. **Interact with the page**: Navigate, click buttons, trigger console logs
+3. **Stop Recording**: Click "Stop Recording" when done
+4. **Export Data**: Click "Export Data" to download a JSON file with all captured logs
 
-1. **Navigate to a webpage** you want to record
-2. **Click the Tab Recorder extension icon** in your Chrome toolbar
-3. **Click "Start Recording"** to begin capturing console logs
-4. **Interact with the webpage** - any console.log calls will be captured
-5. **Click "Stop Recording"** when finished
-6. **Click "Export Data"** to download the recorded logs as a JSON file
+## Current Status (07/11/2025)
 
-### What Gets Recorded
+### ✅ Recently Fixed Issues
 
-The extension captures:
-- Console log messages (log, error, warn, info, debug)
-- Timestamps for each log entry
-- URL of the page being recorded
-- User agent information
-- Recording start/stop events
+#### 1. Race Conditions in Storage
+- **Problem**: `chrome.storage.local.get/set` had race conditions causing log loss
+- **Solution**: In-memory array with reliable append operations
 
-### Export Format
+#### 2. Message Flow Issues
+- **Problem**: Content script wasn't properly forwarding all log levels
+- **Solution**: Fixed message listener to handle all levels correctly
 
-The exported JSON file contains:
-```json
-{
-  "timestamp": "2024-01-01T12:00:00.000Z",
-  "url": "https://example.com",
-  "consoleLogs": [
-    {
-      "timestamp": "2024-01-01T12:00:01.000Z",
-      "level": "log",
-      "message": "User clicked button",
-      "url": "https://example.com",
-      "userAgent": "Mozilla/5.0..."
-    }
-  ]
-}
+#### 3. Timing Issues
+- **Problem**: Console overrides happening before recording started
+- **Solution**: Better initialization timing and polling mechanism
+
+### 🚀 Current Capabilities
+
+✅ `console.log()` messages  
+✅ `console.error()` messages  
+✅ `console.warn()` messages  
+✅ `console.info()` messages  
+✅ `console.debug()` messages  
+✅ Proper timestamps and metadata  
+✅ Works on first click (no more double-click needed)
+
+## Technical Details
+
+- **Manifest Version**: 3
+- **Content Scripts**: Isolated world injection for console override
+- **Background Service Worker**: Handles log storage and management
+- **Storage**: In-memory array with Chrome storage persistence
+
+## File Structure
+
+```
+├── manifest.json          # Extension configuration
+├── popup.html            # Extension popup UI
+├── popup.js              # Popup logic and export functionality
+├── content.js            # Content script for console interception
+├── background.js         # Background service worker
+├── injected.js           # Console override script (injected into page)
+├── test-console.html     # Test page for development
+└── icons/                # Extension icons
 ```
 
 ## Development
 
-### File Structure
-```
-defect-reproducer-tool/
-├── manifest.json          # Extension configuration
-├── popup.html            # Extension popup UI
-├── popup.js              # Popup functionality
-├── background.js          # Background service worker
-├── content.js            # Content script (injected into pages)
-├── icons/                # Extension icons
-└── README.md            # This file
-```
-
-### Key Components
-
-- **manifest.json**: Defines permissions, scripts, and extension metadata
-- **popup.html/js**: User interface for controlling recording
-- **background.js**: Service worker that manages recording state and data storage
-- **content.js**: Injected into web pages to intercept console calls
-
-### Adding New Features
-
-To add new recording capabilities:
-
-1. **Update manifest.json** with new permissions if needed
-2. **Modify content.js** to capture new events (clicks, keyboard, etc.)
-3. **Update background.js** to handle new data types
-4. **Enhance popup.html/js** for new controls
-5. **Update export functionality** to include new data
-
-## Troubleshooting
-
-### Extension Not Working
-- Check that Developer mode is enabled in Chrome extensions
-- Reload the extension after making changes
-- Check Chrome's developer console for errors
-
-### Console Logs Not Being Captured
-- Ensure the extension is loaded on the page
-- Check that the content script is running (look for "Tab Recorder content script loaded" in console)
-- Verify recording is active (extension badge should show "REC")
-
-### Export Issues
-- Ensure you have recorded some data before trying to export
-- Check that the JSON file downloads properly
-- Verify the file contains the expected data structure
-
-## Browser Compatibility
-
-- Chrome 88+ (Manifest V3)
-- Other Chromium-based browsers (Edge, Brave, etc.)
-
-## License
-
-This project is open source. Feel free to modify and distribute according to your needs.
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+To test the extension:
+1. Load the extension in Chrome
+2. Open `test-console.html` in a new tab
+3. Start recording and click the test buttons
+4. Export the data to verify all console levels are captured
 
 ## Future Enhancements
 
-- **Mouse Tracking**: Record mouse movements and clicks
-- **Keyboard Recording**: Capture keyboard input
-- **Network Monitoring**: Track API calls and responses
-- **Screenshot Integration**: Capture screenshots at key moments
-- **Video Recording**: Full screen recording capabilities
-- **Session Replay**: Replay recorded sessions
-- **Cloud Storage**: Save recordings to cloud storage
-- **Collaboration**: Share recordings with team members 
+- Network request recording
+- User interaction tracking
+- Screenshot capture
+- Performance monitoring
+- Multiple export formats (HAR, ZIP)
+
+## License
+
+MIT License - feel free to use and modify as needed. 

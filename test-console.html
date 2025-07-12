@@ -3,61 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Console Test - Tab Recorder</title>
+    <title>Tab Recorder Test Page</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 50px auto;
+            max-width: 800px;
+            margin: 0 auto;
             padding: 20px;
-            background: #f5f5f5;
+            background-color: #f5f5f5;
         }
         .container {
             background: white;
             padding: 30px;
-            border-radius: 10px;
+            border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #555;
+        }
         button {
-            background: #007bff;
+            background-color: #007bff;
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
+            padding: 10px 15px;
             margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
             font-size: 14px;
         }
         button:hover {
-            background: #0056b3;
+            background-color: #0056b3;
         }
-        .test-section {
-            margin: 20px 0;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 5px;
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
         }
-        .instructions {
-            background: #e7f3ff;
-            border-left: 4px solid #007bff;
-            padding: 15px;
-            margin: 20px 0;
+        .status.recording {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.has-data {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .status.idle {
+            background-color: #e2e3e5;
+            color: #383d41;
+            border: 1px solid #d6d8db;
+        }
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Console Interception Test</h1>
+        <h1>Tab Recorder Test Page</h1>
         
-        <div class="instructions">
-            <h3>Instructions:</h3>
-            <ol>
-                <li>Load the Tab Recorder extension</li>
-                <li>Click "Start Recording" in the extension popup</li>
-                <li>Click the buttons below to generate console logs</li>
-                <li>Check that the logs appear in both the browser console AND the extension recording</li>
-                <li>Stop recording and export the data</li>
-            </ol>
+        <div class="test-section">
+            <h3>Extension Status</h3>
+            <div id="status" class="status idle">Ready to record console logs</div>
+            <button id="recordBtn">Start Recording</button>
+            <button id="stopBtn" class="hidden">Stop Recording</button>
+            <button id="exportBtn" class="hidden">Export Data</button>
+            <button id="clearBtn" class="hidden">Clear Data</button>
         </div>
 
         <div class="test-section">
@@ -91,27 +117,27 @@
 
     <script>
         function testBasicLogs() {
-            console.log('=== Basic Log Test ===');
+            console.log('Basic Log Test');
             console.log('This is a simple log message');
             console.info('This is an info message');
             console.debug('This is a debug message');
         }
 
         function testErrorLogs() {
-            console.log('=== Error Log Test ===');
+            console.log('Error Log Test');
             console.error('This is an error message');
             console.error('Error with details:', 'Something went wrong');
             console.error('Error object:', { code: 500, message: 'Internal Server Error' });
         }
 
         function testWarningLogs() {
-            console.log('=== Warning Log Test ===');
+            console.log('Warning Log Test');
             console.warn('This is a warning message');
             console.warn('Warning with details:', 'Something might be wrong');
         }
 
         function testObjectLog() {
-            console.log('=== Object Log Test ===');
+            console.log('Object Log Test');
             const testObj = {
                 name: 'Test Object',
                 value: 42,
@@ -121,13 +147,13 @@
         }
 
         function testArrayLog() {
-            console.log('=== Array Log Test ===');
+            console.log('Array Log Test');
             const testArray = ['apple', 'banana', 'cherry', 123, true];
             console.log('Logging array:', testArray);
         }
 
         function testComplexObject() {
-            console.log('=== Complex Object Test ===');
+            console.log('Complex Object Test');
             const complexObj = {
                 user: {
                     id: 1,
@@ -147,12 +173,12 @@
         }
 
         function testMultipleArgs() {
-            console.log('=== Multiple Arguments Test ===');
+            console.log('Multiple Arguments Test');
             console.log('Multiple arguments:', 'string', 123, true, { key: 'value' });
         }
 
         function testMixedTypes() {
-            console.log('=== Mixed Types Test ===');
+            console.log('Mixed Types Test');
             console.log('Mixed types:', 
                 'String', 
                 42, 
@@ -165,38 +191,33 @@
         }
 
         function checkExtensionStatus() {
-            console.log('=== Extension Status Check ===');
+            console.log('Extension Status Check');
             
             if (typeof chrome !== 'undefined' && chrome.runtime) {
-                console.log('✅ Chrome extension API available');
+                console.log('Chrome extension API available');
                 
                 if (window.isTabRecorderInitialized) {
-                    console.log('✅ Tab Recorder content script is running');
+                    console.log('Tab Recorder content script is running');
                 } else {
-                    console.log('❌ Tab Recorder content script not detected');
+                    console.log('Tab Recorder content script not detected');
                 }
                 
                 if (window.tabRecorderInitialized) {
-                    console.log('✅ Tab Recorder is initialized');
+                    console.log('Tab Recorder is initialized');
                 } else {
-                    console.log('❌ Tab Recorder not initialized');
+                    console.log('Tab Recorder not initialized');
                 }
             } else {
-                console.log('❌ Chrome extension API not available');
+                console.log('Chrome extension API not available');
             }
         }
 
         function testConsoleOverride() {
-            console.log('=== Console Override Test ===');
+            console.log('Console Override Test');
             
-            // Test if console methods are overridden
-            const originalLog = console.log;
             console.log('This should appear in both browser console and extension recording');
-            
-            // Check if console.log was called (this will show in the actual console)
             console.log('If you see this message, console.log is working');
             
-            // Test different console methods
             console.error('This is a test error');
             console.warn('This is a test warning');
             console.info('This is a test info message');
@@ -204,13 +225,11 @@
         }
 
         function testConsoleCapture() {
-            console.log('=== Console Capture Test ===');
+            console.log('Console Capture Test');
             
-            // Test if our console override is working
             if (window.isTabRecorderInitialized) {
-                console.log('✅ Content script is loaded');
+                console.log('Content script is loaded');
                 
-                // Test various console calls
                 console.log('Simple string message');
                 console.log('Multiple arguments:', 'string', 123, true);
                 console.log('Object test:', { name: 'test', value: 42 });
@@ -222,24 +241,20 @@
                 console.log('If recording is active, these should be captured by the extension');
                 console.log('Check the exported JSON to see which messages were captured');
             } else {
-                console.log('❌ Content script not loaded');
+                console.log('Content script not loaded');
             }
         }
 
         function testConsoleOverrideWorking() {
-            console.log('=== Testing Console Override ===');
+            console.log('Testing Console Override');
             
-            // Test if console methods are actually overridden
             const testMessage = 'TEST_CONSOLE_OVERRIDE_' + Date.now();
             
             console.log(testMessage);
             
-            // Since we're injecting into page context, we can't easily check from content script
-            // Instead, let's just verify that the message was logged
             console.log('If you see the test message above, console.log is working');
             console.log('If you see "Tab Recorder: Console override injected successfully" in the console, the injection worked');
             
-            // Test different console methods
             console.error('This is a test error message');
             console.warn('This is a test warning message');
             console.info('This is a test info message');
@@ -248,9 +263,8 @@
             console.log('All console methods should be captured when recording is active');
         }
 
-        // Auto-generate some logs when page loads
         window.addEventListener('load', function() {
-            console.log('=== Page Load Test ===');
+            console.log('Page Load Test');
             console.log('Page loaded successfully at:', new Date().toISOString());
             console.info('Tab Recorder test page is ready');
         });

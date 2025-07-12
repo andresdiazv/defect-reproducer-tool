@@ -3,6 +3,7 @@
 let recordingTabs = new Set();
 let consoleLogs = []; // Store logs in memory for better performance
 
+// Runs when the extension is first installed
 chrome.runtime.onInstalled.addListener(function() {
     // Initialize storage
     chrome.storage.local.set({
@@ -11,7 +12,8 @@ chrome.runtime.onInstalled.addListener(function() {
     });
 });
 
-// Handle messages from popup and content scripts
+// Main message handler - receives messages from popup and content scripts
+// This is the central communication hub for the extension
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     console.log('Background: Received message:', request.action, request);
 
@@ -45,6 +47,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     }
 });
 
+// Called when recording starts on a tab
+// Sets up the recording state and visual indicators
 function handleRecordingStarted(tabId, url) {
     recordingTabs.add(tabId);
     
@@ -67,6 +71,8 @@ function handleRecordingStarted(tabId, url) {
     });
 }
 
+// Called when recording stops on a tab
+// Cleans up the recording state and visual indicators
 function handleRecordingStopped(tabId) {
     recordingTabs.delete(tabId);
     
@@ -79,6 +85,8 @@ function handleRecordingStopped(tabId) {
     });
 }
 
+// Stores a console log entry in memory and persistent storage
+// This is called every time a console.log/error/warn/etc happens on the page
 function handleConsoleLog(log) {
     console.log('Background: Received console log:', log);
     
@@ -97,7 +105,8 @@ function handleConsoleLog(log) {
     });
 }
 
-// Handle tab updates to manage recording state
+// Handles page reloads and navigation
+// Re-injects the content script if the page was reloaded while recording
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     if (changeInfo.status === 'complete' && recordingTabs.has(tabId)) {
         // Re-inject content script if page was reloaded
@@ -110,14 +119,16 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     }
 });
 
-// Handle tab removal
+// Handles when a tab is closed
+// Cleans up recording state for that tab
 chrome.tabs.onRemoved.addListener(function(tabId) {
     if (recordingTabs.has(tabId)) {
         recordingTabs.delete(tabId);
     }
 });
 
-// Handle extension icon click
+// Handles clicks on the extension icon
+// Currently not used (popup handles this), but could be used for quick actions
 chrome.action.onClicked.addListener(function(tab) {
     // This will be handled by the popup, but we can add quick actions here later
 }); 

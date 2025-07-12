@@ -8,33 +8,39 @@ document.addEventListener('DOMContentLoaded', function() {
     let isRecording = false;
     let hasRecordedData = false;
 
-    // Check current recording status on popup open
+    // Check current recording status when popup opens
     chrome.storage.local.get(['isRecording', 'consoleLogs'], function(result) {
         isRecording = result.isRecording || false;
         hasRecordedData = (result.consoleLogs && result.consoleLogs.length > 0) || false;
         updateUI();
     });
 
+    // Main start recording button handler
     recordBtn.addEventListener('click', function() {
         if (!isRecording) {
             startRecording();
         }
     });
 
+    // Main stop recording button handler
     stopBtn.addEventListener('click', function() {
         if (isRecording) {
             stopRecording();
         }
     });
 
+    // Export data button handler
     exportBtn.addEventListener('click', function() {
         exportData();
     });
 
+    // Clear data button handler
     clearBtn.addEventListener('click', function() {
         clearData();
     });
 
+    // Main function to start recording
+    // Checks if content script is loaded, injects it if needed, then starts recording
     function startRecording() {
         status.textContent = 'Starting recording...';
         
@@ -56,6 +62,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Injects the content script into the current tab
+    // This is needed if the page was loaded before the extension was installed
     function injectContentScript(tabId, url) {
         chrome.scripting.executeScript({
             target: { tabId: tabId },
@@ -71,6 +79,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Waits for the content script to be ready before starting recording
+    // This prevents timing issues where we try to start recording before the script is loaded
     function pollForContentScriptReady(tabId, url, attempts = 0) {
         const maxAttempts = 10; // Try for up to 1 second (10 * 100ms)
         
@@ -98,6 +108,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Actually starts the recording on the content script
+    // This is called after we know the content script is ready
     function startRecordingDirect(tabId, url) {
         chrome.tabs.sendMessage(tabId, {
             action: 'startRecording'
@@ -126,6 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Stops the recording and updates the UI
     function stopRecording() {
         status.textContent = 'Stopping recording...';
         
@@ -163,6 +176,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Exports the recorded data as a JSON file
+    // Downloads the file to the user's default download folder
     function exportData() {
         // Get logs from background script instead of storage
         chrome.runtime.sendMessage({ action: 'getLogs' }, function(response) {
@@ -204,6 +219,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Clears all recorded data
+    // Removes logs from both memory and storage
     function clearData() {
         chrome.runtime.sendMessage({ action: 'clearLogs' }, function(response) {
             hasRecordedData = false;
@@ -215,6 +232,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Updates the popup UI based on current state
+    // Shows/hides buttons and updates status text
     function updateUI() {
         if (isRecording) {
             // Recording state
@@ -243,7 +262,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Listen for messages from background script
+    // Listens for messages from background script
+    // Currently only handles status updates
     chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         if (request.action === 'updateStatus') {
             isRecording = request.isRecording;

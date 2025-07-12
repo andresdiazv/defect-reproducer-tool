@@ -13,7 +13,7 @@ if (window.tabRecorderInitialized) {
     // Add global flag for debugging
     window.isTabRecorderInitialized = true;
 
-    // Function to send log to background
+    // Sends a log entry to the background script for storage
     function sendLogToBackground(logEntry) {
         if (chrome && chrome.runtime) {
             chrome.runtime.sendMessage({
@@ -25,13 +25,12 @@ if (window.tabRecorderInitialized) {
         }
     }
 
-    // Listen for messages from the injected script
+    // Listens for messages from the injected script (console overrides)
+    // When a console.log/error/warn/etc happens on the page, the injected script
+    // sends a message here, and we forward it to the background script
     window.addEventListener('message', (event) => {
         if (event.source !== window) return;
         if (event.data && event.data.source === 'tab-recorder') {
-            // Temporary debugging to see what's happening
-            console.log('Tab Recorder: Received message with level:', event.data.level, 'isRecording:', isRecording);
-            
             if (isRecording) {
                 const logEntry = {
                     timestamp: new Date().toISOString(),
@@ -40,15 +39,13 @@ if (window.tabRecorderInitialized) {
                     url: window.location.href,
                     userAgent: navigator.userAgent
                 };
-                console.log('Tab Recorder: Forwarding log to background:', logEntry);
                 sendLogToBackground(logEntry);
-            } else {
-                console.log('Tab Recorder: Not recording, ignoring log');
             }
         }
     });
 
-    // Initialize console interception - simplified without chrome.tabs.query
+    // Injects the console override script into the page
+    // This script will intercept all console.log/error/warn/etc calls
     function initializeConsoleInterception() {
         try {
             // Check if already injected
@@ -74,7 +71,8 @@ if (window.tabRecorderInitialized) {
         }
     }
 
-    // Start recording
+    // Starts recording console logs
+    // Sets the flag and sends a start message to background script
     function startRecording() {
         try {
             isRecording = true;
@@ -98,7 +96,8 @@ if (window.tabRecorderInitialized) {
         }
     }
 
-    // Stop recording
+    // Stops recording console logs
+    // Sets the flag and sends a stop message to background script
     function stopRecording() {
         try {
             isRecording = false;
@@ -122,7 +121,8 @@ if (window.tabRecorderInitialized) {
         }
     }
 
-    // Listen for messages from popup - register this FIRST
+    // Listens for messages from the popup (start/stop recording commands)
+    // This is how the popup communicates with the content script
     if (chrome && chrome.runtime) {
         chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             console.log('Content script received message:', request);
@@ -171,7 +171,7 @@ if (window.tabRecorderInitialized) {
         initializeConsoleInterception();
     }, 50);
 
-    // Handle page unload
+    // Clean up when page is unloaded
     window.addEventListener('beforeunload', function() {
         if (isRecording) {
             stopRecording();
