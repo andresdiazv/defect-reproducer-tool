@@ -7,8 +7,11 @@ A Chrome extension for recording tab actions to help with defect reproduction, s
 - **Console Log Recording**: Captures all console methods (`log`, `error`, `warn`, `info`, `debug`)
 - **Real-time Recording**: Start/stop recording with a single click
 - **Export Functionality**: Export captured logs as JSON with timestamps and metadata
+<<<<<<< HEAD
 - **Cross-tab Support**: Works on any webpage
 - **Reliable Performance**: No race conditions or timing issues
+=======
+>>>>>>> cd718653ba22eb82f2683ce547e23f419e3639f7
 
 ## Installation
 
@@ -51,17 +54,37 @@ A Chrome extension for recording tab actions to help with defect reproduction, s
 ✅ Proper timestamps and metadata  
 ✅ Works on first click (no more double-click needed)
 
+<<<<<<< HEAD
 ## Technical Details
 
 - **Manifest Version**: 3
 - **Content Scripts**: Isolated world injection for console override
 - **Background Service Worker**: Handles log storage and management
 - **Storage**: In-memory array with Chrome storage persistence
+=======
+## Demo
+
+This is a picture of how the extension looks when opened on my testing page used for simulating errors and debugging.  
+<img width="1000" alt="Extension on test page" src="https://github.com/user-attachments/assets/6bc23866-9710-4112-b84f-e5afb179888a" />
+
+This is a picture of when the extension is ready to record.  
+<img width="300" alt="Ready to record" src="https://github.com/user-attachments/assets/409750d5-149f-4f7c-b77a-22b50f402797" />
+
+This is a picture of when the extension is in the recording phase.  
+<img width="300" alt="Recording in progress" src="https://github.com/user-attachments/assets/08db60e1-895b-4c3c-9afd-2992d39c68e1" />
+
+This is the exported JSON file opened in Notepad.  
+<img width="700" alt="Exported JSON" src="https://github.com/user-attachments/assets/74228884-52bb-4e6f-bfcd-253c31a7df57" />
+>>>>>>> cd718653ba22eb82f2683ce547e23f419e3639f7
 
 ## File Structure
 
 ```
+<<<<<<< HEAD
 ├── manifest.json          # Extension configuration
+=======
+├── manifest.json         # Extension configuration
+>>>>>>> cd718653ba22eb82f2683ce547e23f419e3639f7
 ├── popup.html            # Extension popup UI
 ├── popup.js              # Popup logic and export functionality
 ├── content.js            # Content script for console interception
@@ -89,4 +112,8 @@ To test the extension:
 
 ## License
 
+<<<<<<< HEAD
 MIT License - feel free to use and modify as needed. 
+=======
+MIT License - feel free to use and modify as needed. 
+>>>>>>> cd718653ba22eb82f2683ce547e23f419e3639f7
