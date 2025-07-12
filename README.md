@@ -7,8 +7,6 @@ A Chrome extension for recording tab actions to help with defect reproduction, s
 - **Console Log Recording**: Captures all console methods (`log`, `error`, `warn`, `info`, `debug`)
 - **Real-time Recording**: Start/stop recording with a single click
 - **Export Functionality**: Export captured logs as JSON with timestamps and metadata
-- **Cross-tab Support**: Works on any webpage
-- **Reliable Performance**: No race conditions or timing issues
 
 ## Installation
 
@@ -65,17 +63,10 @@ This is a picture of when the extension is in the recording phase.
 This is the exported JSON file opened in Notepad.  
 <img width="700" alt="Exported JSON" src="https://github.com/user-attachments/assets/74228884-52bb-4e6f-bfcd-253c31a7df57" />
 
-## Technical Details
-
-- **Manifest Version**: 3
-- **Content Scripts**: Isolated world injection for console override
-- **Background Service Worker**: Handles log storage and management
-- **Storage**: In-memory array with Chrome storage persistence
-
 ## File Structure
 
 ```
-├── manifest.json          # Extension configuration
+├── manifest.json         # Extension configuration
 ├── popup.html            # Extension popup UI
 ├── popup.js              # Popup logic and export functionality
 ├── content.js            # Content script for console interception
